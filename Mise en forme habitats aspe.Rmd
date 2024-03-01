@@ -1,0 +1,104 @@
+---
+title: "Mise en forme des tables habitats dans ASPE"
+author: "Nicolas Poulet"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE,echo = FALSE}
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+
+
+library(knitr)
+library(tidyverse)
+library(aspe)
+library(flextable)
+```
+
+
+```{r}
+datafile <- "D:/Documents/Analyses_stat/En_cours/ASPE/tables_sauf_mei_2024_01_22_12_13_56.RData"
+
+load(datafile)
+
+```
+
+# Mise en forme des tables "habitats" dans ASPE
+
+Il s'agit ici de préparer les tables "Facies", etc. de façon à avoir une ligne de varibales d'habitats par opération.
+
+## Tables "Facies"
+
+On commence par attribuer le libellé de chaque modalité de chaque variable
+
+```{r}
+facies2 <- facies %>%
+  left_join(y=ref_type_facies %>%
+              select(tyf_id,
+                     facies = tyf_libelle) %>% 
+              rename(fac_tyf_id = tyf_id)) %>%
+  left_join(y=ref_vegetation_dominante %>%
+              select(ved_id,
+                     vegt_dominante = ved_libelle) %>% 
+              rename(fac_ved_id = ved_id)) %>% 
+  left_join(y=ref_granulometrie %>%
+              select(gra_id,
+                     gra_dominante = gra_libelle) %>% 
+              rename(fac_gra_id_dominante = gra_id)) %>% 
+  left_join(y=ref_granulometrie %>%
+              select(gra_id,
+                     gra_accessoire = gra_libelle) %>% 
+              rename(fac_gra_id_accessoire = gra_id)) %>% 
+  left_join(y=ref_type_colmatage %>%
+              select(tyc_id,
+                     colmatage = tyc_libelle) %>% 
+              rename(fac_tyc_id = tyc_id)) %>%
+  select(-fac_tyf_id,-fac_gra_id_accessoire,-fac_gra_id_dominante,-fac_tyc_id,-fac_tyf_id,-fac_ved_id)
+
+kable(head(facies2))
+
+```
+
+
+Puis on passe les modalités de facies, de granulo, végétation et de colmatage en variable et on calcule les moyenne, min, max et CV de la profondeur.
+Attention, compte tenu du grand nombre de NA dans la surface de recouvrement de la végétation et du colmatage, on ne garde que l'info de présence/absence
+
+```{r}
+facies3 <- facies2 %>% 
+  mutate(vegt_dominante = case_when(vegt_dominante == "Non observable" ~ "Vegt_dom_non_obs",
+            TRUE ~ vegt_dominante)) %>%
+  mutate(colmatage = case_when(colmatage == "Non observable" ~ "colm_non_obs",
+                   TRUE ~ colmatage)) %>% 
+  mutate(gra_dominante = case_when(gra_dominante == "Non observable" ~ "gra_dom_non_obs",
+                   TRUE ~ gra_dominante)) %>% 
+  mutate(gra_accessoire = case_when(gra_accessoire == "Non observable" ~ "gra_acc_non_obs",
+                   TRUE ~ gra_accessoire)) %>%
+  group_by(fac_ode_ope_id) %>%
+  mutate(prof_moy = mean(fac_profondeur_moyenne),
+         prof_max = max(fac_profondeur_moyenne),
+         prof_min = min(fac_profondeur_moyenne),
+         prof_cv = sd(fac_profondeur_moyenne)/mean(fac_profondeur_moyenne)) %>%
+  pivot_wider(names_from = facies,
+              values_from = fac_importance_relative,values_fill = 0) %>% 
+  select(-"NA") %>% 
+  pivot_wider(names_from = vegt_dominante,values_from = vegt_dominante,values_fn = ~1,values_fill = 0) %>% 
+  select(-"NA") %>%
+  pivot_wider(names_from = colmatage, values_from = colmatage, values_fn = ~1,values_fill = 0) %>% 
+  select(-"NA") %>%
+  select(-fac_profondeur_moyenne,
+         -fac_recouvrement_vegetation,
+         -gra_dominante,
+         -gra_accessoire)
+
+kable(head(facies3))
+  
+```
+
+Maintenant, on agregge les données par opération.
+
+```{r}
+
+```
+
