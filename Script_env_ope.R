@@ -63,10 +63,10 @@ facies3a <- facies2 %>%
   left_join(verif_vgt) %>% #On ajoute le filtre vgt
   group_by(fac_ode_ope_id) %>% # On identifie les opérations pour lesquelles la surface de la vgt n'a pas été renseignée pour au moins un facies
   mutate(select_vgt = case_when(!is.na(verif) ~"OK",
-         TRUE ~ NA)) %>%
+         TRUE ~ NA)) %>% 
   ungroup() %>% 
-  filter(select_vgt == "OK") %>% 
-  mutate(fac_recouvrement_vegetation_rel = (fac_recouvrement_vegetation/100*fac_importance_relative/100)*100) %>%
+  filter(select_vgt == "OK") %>% # On ne conserve que les opérations OK
+  mutate(fac_recouvrement_vegetation_rel = (fac_recouvrement_vegetation/100*fac_importance_relative/100)*100) %>% # Ici on rapporte la surface de la végétation relativement à la surface du faciès
   mutate(vegt_dominante = case_when(vegt_dominante == "Non observable" ~ "Vegt_dom_non_obs",
                                     TRUE ~ vegt_dominante)) %>%
   mutate(colmatage = case_when(colmatage == "Non observable" ~ "colm_non_obs",
