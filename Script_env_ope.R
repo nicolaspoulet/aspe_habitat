@@ -1,6 +1,8 @@
 library(aspe)
 library(tidyverse)
 
+load("~/Analyses_stat/En_cours/aspe_habitat/tables_sauf_mei_2024_01_22_12_13_56.RData")
+
 passerelle <- mef_creer_passerelle()
 
 env <- passerelle %>%
@@ -15,6 +17,7 @@ env <- passerelle %>%
   inner_join(y = habitat%>% 
                rename(ode_hab_id = hab_id))
 
+#Gestion de la table Facies
 
 facies2 <- facies %>%
   left_join(y=ref_type_facies %>%
@@ -146,8 +149,66 @@ facies5b <- facies3b %>%
 facies6b <- left_join(facies4b,facies5b)
       
            
-        
+#Gestion de la table habitat
 
+habitat2 <- habitat %>%
+  left_join(y=ref_type_abondance %>%
+              select(tya_id,
+                     trous_fosses = tya_libelle) %>% 
+              rename(hab_tya_id_trous_fosses = tya_id)) %>% 
+  select(-hab_tya_id_trous_fosses) %>% 
+  left_join(y=ref_type_abondance %>%
+              select(tya_id, sous_berges = tya_libelle) %>% 
+              rename(hab_tya_id_sous_berges = tya_id)) %>% 
+  select(-hab_tya_id_sous_berges) %>% 
+  left_join(y=ref_type_abondance %>%
+              select(tya_id, abris_rocheux = tya_libelle) %>% 
+              rename(hab_tya_id_abris_rocheux = tya_id)) %>% 
+  select(-hab_tya_id_abris_rocheux) %>% 
+  left_join(y=ref_type_abondance %>%
+              select(tya_id, embacles_souches = tya_libelle) %>% 
+              rename(hab_tya_id_embacles_souches = tya_id)) %>% 
+  select(-hab_tya_id_embacles_souches) %>% 
+  left_join(y=ref_type_abondance %>%
+              select(tya_id, abri_vegetal_aquatique = tya_libelle) %>% 
+              rename(hab_tya_id_abri_vegetal_aquatique = tya_id)) %>% 
+  select(-hab_tya_id_abri_vegetal_aquatique) %>% 
+  left_join(y=ref_type_abondance %>%
+              select(tya_id, vegetation_bordure = tya_libelle) %>% 
+              rename(hab_tya_id_vegetation_bordure = tya_id)) %>% 
+  select(-hab_tya_id_vegetation_bordure) %>% 
+  left_join(y=ref_sinuosite %>%
+              select(sin_id, sinuosite = sin_libelle) %>% 
+              rename(hab_sin_id = sin_id)) %>% 
+  select(-hab_sin_id)  %>% 
+  left_join(y=ref_ombrage_riviere %>%
+              select(omr_id, ombrage = omr_libelle) %>% 
+              rename(hab_omr_id = omr_id)) %>% 
+  select(-hab_omr_id) # %>% 
+  left_join(y=ref_type_abondance %>%
+              select(tya_id, vegetation_aquatique = tya_libelle) %>% 
+              rename(hab_tys_id_vegetation_aquatique = tya_id)) %>% 
+  select(-hab_tys_id_vegetation_aquatique)
+  
+
+#Gestion de la table operation-donnees_environnementales
+  
+  operation_donnees_environnementales2 <- operation_donnees_environnementales %>%
+    left_join(y=ref_logique_3 %>%
+                select(lo3_id,
+                       debit_reserve = lo3_libelle) %>% 
+                rename(ode_lo3_id_secteur_debit_reserve = lo3_id)) %>% 
+    select(-ode_lo3_id_secteur_debit_reserve) %>%
+    left_join(y=ref_logique_3 %>%
+                select(lo3_id,
+                       debit_ecluse = lo3_libelle) %>% 
+                rename(ode_lo3_id_secteur_soumis_ecluse = lo3_id)) %>% 
+    select(-ode_lo3_id_secteur_soumis_ecluse) %>%
+    left_join(y=ref_logique_3 %>%
+                select(lo3_id,
+                       soutien_etiage = lo3_libelle) %>% 
+                rename(ode_lo3_id_soutien_etiage = lo3_id)) %>% 
+    select(-ode_lo3_id_soutien_etiage)
     
     
     
